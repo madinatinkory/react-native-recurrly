@@ -5,6 +5,8 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import "@/global.css";
 import { styled } from "nativewind";
+import { posthog } from "@/lib/posthog";
+import { posthogLog } from "@/lib/posthog-logger";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -47,6 +49,8 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
                 if (result.error) throw result.error;
                 const finalized = await signUp.finalize();
                 if (finalized.error) throw finalized.error;
+                posthog?.capture("account_created");
+                posthogLog.accountCreated();
                 router.replace("/(tabs)");
             } else if (mode === "sign-up") {
                 const created = await signUp.password({ emailAddress: normalizedEmail, password });
@@ -60,6 +64,8 @@ export default function AuthScreen({ mode }: AuthScreenProps) {
                 if (signIn.status === "complete") {
                     const finalized = await signIn.finalize();
                     if (finalized.error) throw finalized.error;
+                    posthog?.capture("user_signed_in");
+                    posthogLog.userSignedIn();
                     router.replace("/(tabs)");
                 } else {
                     setError("This account needs another verification step. Try signing in with a different method or contact support.");

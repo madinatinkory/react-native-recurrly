@@ -14,12 +14,22 @@ import FlatList = Animated.FlatList;
 import SubscriptionCard from "@/components/SubscriptionCard";
 import {useState} from "react";
 import { useUser } from "@clerk/expo";
+import { posthog } from "@/lib/posthog";
+import { posthogLog } from "@/lib/posthog-logger";
 
 const SafeAreaView = styled(RNSafeAreaView);
 export default function App() {
 
     const { user } = useUser();
     const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
+
+    const handleSubscriptionPress = (subscriptionId: string) => {
+        if (expandedSubscriptionId !== subscriptionId) {
+            posthog?.capture("subscription_details_opened", { subscription_id: subscriptionId });
+            posthogLog.subscriptionDetailsOpened(subscriptionId);
+        }
+        setExpandedSubscriptionId((currentId) => (currentId === subscriptionId ? null : subscriptionId));
+    };
 
     return(
         <SafeAreaView className="flex-1 bg-background p-5">
@@ -76,7 +86,7 @@ export default function App() {
                         <SubscriptionCard
                             {...item}
                             expanded={expandedSubscriptionId === item.id}
-                            onPress={() => setExpandedSubscriptionId((currentId) => (currentId === item.id ? null : item.id))}
+                            onPress={() => handleSubscriptionPress(item.id)}
                         />
                     )}
                     extraData={expandedSubscriptionId}
