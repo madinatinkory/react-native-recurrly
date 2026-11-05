@@ -1,12 +1,5 @@
-import {View, Text} from 'react-native'
-import {Link} from "expo-router";
+import AuthScreen from "@/components/AuthScreen";
 
-const SignUp = () => {
-    return (
-        <View>
-            <Text>SignIn</Text>
-            <Link href="/(auth)/sign-up)">Sign In</Link>
-        </View>
-    )
+export default function SignUp() {
+    return <AuthScreen mode="sign-up" />;
 }
-export default SignUp

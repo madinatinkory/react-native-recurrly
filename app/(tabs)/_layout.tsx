@@ -1,9 +1,10 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { tabs } from "@/constants/data";
 import clsx from "clsx";
-import { View, Image, ImageSourcePropType } from "react-native";
+import { ActivityIndicator, View, Image, ImageSourcePropType } from "react-native";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {colors, components} from "@/constants/theme";
+import { useAuth } from "@clerk/expo";
 
 const tabBar = components.tabBar;
 
@@ -24,10 +25,15 @@ const TabIcon = ({ focused, icon }: TabIconsProps) => {
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
+    const { isLoaded, isSignedIn } = useAuth();
+
+    if (!isLoaded) return <ActivityIndicator className="flex-1 bg-background" color={colors.primary} />;
+    if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
     return (
         <Tabs screenOptions={{
             headerShown: false,
             tabBarShowLabel: false,
+            sceneStyle: { backgroundColor: colors.background || "#FBF9F1" },
             tabBarStyle: {
                 position: 'absolute',
                 bottom: Math.max(insets.bottom, tabBar.horizontalInset),

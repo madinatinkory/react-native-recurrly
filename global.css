@@ -417,4 +417,16 @@
     .category-chip-text-active {
         @apply text-accent;
     }
+
+    .settings-card {
+        @apply bg-card border border-border rounded-2xl p-4 mb-4;
+    }
+
+    .settings-row {
+        @apply flex-row justify-between items-center py-2.5;
+    }
+
+    .settings-btn-logout {
+        @apply bg-accent h-12 rounded-2xl items-center justify-center;
+    }
 }
