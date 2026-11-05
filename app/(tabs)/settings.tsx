@@ -119,6 +119,7 @@ export default function Settings() {
                 <Text style={{ fontFamily: "sans-bold", fontSize: 15, color: "#FFFFFF" }}>
                     Sign Out
                 </Text>
+
             </TouchableOpacity>
 
         </SafeAreaView>
