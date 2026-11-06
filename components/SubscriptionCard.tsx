@@ -1,14 +1,18 @@
 import {View, Text, Image, Pressable} from "react-native";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {formatCurrency, formatStatusLabel, formatSubscriptionDateTime} from "@/lib/utils";
 import clsx from "clsx";
+import {icons} from "@/constants/icons";
 
 const SubscriptionCard = ({ name, price, currency, icon, billing, color, category, plan, renewalDate, expanded, onPress, paymentMethod, startDate, status } : SubscriptionCardProps) => {
+    const [iconLoadFailed, setIconLoadFailed] = useState(false);
+    useEffect(() => setIconLoadFailed(false), [icon]);
+
     return (
         <Pressable onPress={onPress} className={clsx("sub-card", expanded ? "sub-card-expanded" : "bg-card")} style={!expanded && color ? {backgroundColor: color} : null}>
             <View className="sub-head">
                 <View className="sub-main">
-                    <Image source={icon} className="sub-icon" />
+                    <Image source={iconLoadFailed ? icons.wallet : icon} onError={() => setIconLoadFailed(true)} className="sub-icon" />
                     <View className="sub-copy">
                         <Text numberOfLines={1} className="sub-title">
                             {name}

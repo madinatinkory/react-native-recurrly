@@ -3,6 +3,8 @@ import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { useAuth, useUser } from "@clerk/expo";
 import images from "@/constants/images";
 import dayjs from "dayjs";
+import { posthog } from "@/lib/posthog";
+import { posthogLog } from "@/lib/posthog-logger";
 import { styled } from "nativewind";
 import "@/global.css";
 
@@ -20,6 +22,9 @@ export default function Settings() {
                 style: "destructive",
                 onPress: async () => {
                     await signOut();
+                    posthog?.capture("user_signed_out");
+                    posthogLog.userSignedOut();
+                    posthog?.reset();
                 },
             },
         ]);

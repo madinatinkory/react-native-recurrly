@@ -1,15 +1,46 @@
 import "../global.css";
 import {SplashScreen, Stack} from "expo-router";
 import {useFonts} from "expo-font";
-import {useEffect} from "react";
-import { ClerkProvider } from "@clerk/expo";
+import {ReactNode, useEffect, useRef} from "react";
+import { ClerkProvider, useUser } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
+import { PostHogProvider } from "posthog-react-native";
+import { posthog } from "@/lib/posthog";
 
 SplashScreen.preventAutoHideAsync();
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 if (!publishableKey) {
     throw new Error("Add your authentication publishable key to the .env file");
+}
+
+function PostHogIdentity({ children }: { children: ReactNode }) {
+    const { isLoaded, user } = useUser();
+    const identifiedUserId = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        if (!user) {
+            identifiedUserId.current = null;
+            return;
+        }
+
+        if (!posthog || identifiedUserId.current === user.id) return;
+
+        const personProperties: Record<string, string> = {};
+        if (user.primaryEmailAddress?.emailAddress) {
+            personProperties.email = user.primaryEmailAddress.emailAddress;
+        }
+        if (user.fullName) {
+            personProperties.name = user.fullName;
+        }
+
+        posthog.identify(user.id, { $set: personProperties });
+        identifiedUserId.current = user.id;
+    }, [isLoaded, user]);
+
+    return children;
 }
 
 export default function RootLayout() {
@@ -30,8 +61,7 @@ export default function RootLayout() {
 
     if(!fontsLoaded) return null;
 
-    return (
-        <ClerkProvider publishableKey={publishableKey!} tokenCache={tokenCache}>
+    const router = (
         <Stack
             screenOptions={{
                 headerShown: false,
@@ -41,6 +71,17 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         </Stack>
+    );
+
+    return (
+        <ClerkProvider publishableKey={publishableKey!} tokenCache={tokenCache}>
+            <PostHogIdentity>
+                {posthog ? (
+                    <PostHogProvider client={posthog}>{router}</PostHogProvider>
+                ) : (
+                    router
+                )}
+            </PostHogIdentity>
         </ClerkProvider>
     );
 }

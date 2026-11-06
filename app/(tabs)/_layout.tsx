@@ -5,6 +5,7 @@ import { ActivityIndicator, View, Image, ImageSourcePropType } from "react-nativ
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {colors, components} from "@/constants/theme";
 import { useAuth } from "@clerk/expo";
+import { SubscriptionsProvider } from "@/components/SubscriptionsContext";
 
 const tabBar = components.tabBar;
 
@@ -30,6 +31,7 @@ export default function TabLayout() {
     if (!isLoaded) return <ActivityIndicator className="flex-1 bg-background" color={colors.primary} />;
     if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
     return (
+        <SubscriptionsProvider>
         <Tabs screenOptions={{
             headerShown: false,
             tabBarShowLabel: false,
@@ -72,5 +74,6 @@ export default function TabLayout() {
                 }}
             />
         </Tabs>
+        </SubscriptionsProvider>
     );
 }
