@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
     KeyboardAvoidingView,
+    Alert,
     Modal,
     Platform,
     Pressable,
@@ -28,7 +29,7 @@ const categoryColors: Record<string, string> = {
 interface CreateSubscriptionModalProps {
     visible: boolean;
     onClose: () => void;
-    onCreate: (subscription: Subscription) => void;
+    onCreate: (subscription: Subscription) => Promise<void>;
 }
 
 const CreateSubscriptionModal = ({ visible, onClose, onCreate }: CreateSubscriptionModalProps) => {
@@ -36,6 +37,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onCreate }: CreateSubscript
     const [price, setPrice] = useState("");
     const [frequency, setFrequency] = useState<"Monthly" | "Yearly">("Monthly");
     const [category, setCategory] = useState<string>(categories[0]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const parsedPrice = Number(price);
     const isValid = name.trim().length > 0 && Number.isFinite(parsedPrice) && parsedPrice > 0;
 
@@ -47,23 +49,30 @@ const CreateSubscriptionModal = ({ visible, onClose, onCreate }: CreateSubscript
         onClose();
     };
 
-    const handleSubmit = () => {
-        if (!isValid) return;
+    const handleSubmit = async () => {
+        if (!isValid || isSubmitting) return;
         const startDate = dayjs();
-        onCreate({
-            id: `subscription-${Date.now()}`,
-            name: name.trim(),
-            price: parsedPrice,
-            frequency,
-            category,
-            status: "active",
-            startDate: startDate.toISOString(),
-            renewalDate: startDate.add(1, frequency === "Monthly" ? "month" : "year").toISOString(),
-            icon: getSubscriptionIcon(name),
-            billing: frequency,
-            color: categoryColors[category],
-        });
-        resetAndClose();
+        setIsSubmitting(true);
+        try {
+            await onCreate({
+                id: `subscription-${Date.now()}`,
+                name: name.trim(),
+                price: parsedPrice,
+                frequency,
+                category,
+                status: "active",
+                startDate: startDate.toISOString(),
+                renewalDate: startDate.add(1, frequency === "Monthly" ? "month" : "year").toISOString(),
+                icon: getSubscriptionIcon(name),
+                billing: frequency,
+                color: categoryColors[category],
+            });
+            resetAndClose();
+        } catch {
+            Alert.alert("Unable to save subscription", "Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -110,7 +119,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onCreate }: CreateSubscript
                                         ))}
                                     </View>
                                 </View>
-                                <Pressable onPress={handleSubmit} disabled={!isValid} className={clsx("auth-button", !isValid && "auth-button-disabled")}>
+                                <Pressable onPress={handleSubmit} disabled={!isValid || isSubmitting} className={clsx("auth-button", (!isValid || isSubmitting) && "auth-button-disabled")}>
                                     <Text className="auth-button-text">Create Subscription</Text>
                                 </Pressable>
                             </View>

@@ -42,10 +42,9 @@ export const getSubscriptionIcon = (name: string): ImageSourcePropType => {
     );
 
     if (brand && bundledIcons[brand]) return bundledIcons[brand];
+    if (!brand) return icons.medium;
 
-    const domain = brand
-        ? serviceDomains[brand]
-        : `${normalizedName.replace(/[^a-z0-9]/g, "")}.com`;
+    const domain = serviceDomains[brand];
     return {
         uri: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`,
     };

@@ -23,20 +23,13 @@ function PostHogIdentity({ children }: { children: ReactNode }) {
 
         if (!user) {
             identifiedUserId.current = null;
+            posthog?.reset();
             return;
         }
 
         if (!posthog || identifiedUserId.current === user.id) return;
 
-        const personProperties: Record<string, string> = {};
-        if (user.primaryEmailAddress?.emailAddress) {
-            personProperties.email = user.primaryEmailAddress.emailAddress;
-        }
-        if (user.fullName) {
-            personProperties.name = user.fullName;
-        }
-
-        posthog.identify(user.id, { $set: personProperties });
+        posthog.identify(user.id);
         identifiedUserId.current = user.id;
     }, [isLoaded, user]);
 
